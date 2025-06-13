@@ -1,0 +1,79 @@
+#CODE FOR SERVER
+import socket
+import threading
+
+def handle_client(conn, addr):
+    print(f"✅ Connected by {addr}")
+    while True:
+        try:
+            msg = conn.recv(1024).decode()
+            if not msg:
+                break
+            print(f"Client: {msg}")
+        except:
+            break
+    conn.close()
+    print("❌ Client disconnected.")
+
+def main():
+    host = '127.0.0.1'  # Localhost
+    port = 5555
+
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((host, port))
+    server.listen(1)
+
+    print(f"💬 Server listening on {host}:{port}")
+    conn, addr = server.accept()
+
+    # Thread to handle incoming messages
+    thread = threading.Thread(target=handle_client, args=(conn, addr))
+    thread.start()
+
+    # Send messages
+    while True:
+        msg = input()
+        if msg.lower() == 'exit':
+            conn.close()
+            break
+        conn.send(msg.encode())
+
+if __name__ == "__main__":
+    main()
+
+
+#CODE FOR CLIENT
+import socket
+import threading
+
+def receive_messages(sock):
+    while True:
+        try:
+            msg = sock.recv(1024).decode()
+            if not msg:
+                break
+            print(f"Server: {msg}")
+        except:
+            break
+
+def main():
+    host = '127.0.0.1'  # Server IP
+    port = 5555
+
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((host, port))
+
+    # Thread to receive messages
+    thread = threading.Thread(target=receive_messages, args=(client,))
+    thread.start()
+
+    # Send messages
+    while True:
+        msg = input()
+        if msg.lower() == 'exit':
+            client.close()
+            break
+        client.send(msg.encode())
+
+if __name__ == "__main__":
+    main()
