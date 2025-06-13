@@ -1,0 +1,38 @@
+const fetch = require('node-fetch');
+const readline = require('readline');
+
+// Replace with your OpenWeatherMap API key
+const API_KEY = 'API_KEY';
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+function getWeather(location) {
+  const url = `http://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(location)}&appid=${API_KEY}&units=metric`;
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      if (data.cod !== 200) {
+        console.log(`❌ Error: ${data.message}`);
+        rl.close();
+        return;
+      }
+
+      console.log(`\n📍 Weather for ${data.name}, ${data.sys.country}`);
+      console.log(`🌡 Temperature: ${data.main.temp} °C`);
+      console.log(`💧 Humidity: ${data.main.humidity}%`);
+      console.log(`🌤 Condition: ${data.weather[0].description}`);
+      rl.close();
+    })
+    .catch(err => {
+      console.error("Error fetching weather data:", err);
+      rl.close();
+    });
+}
+
+rl.question("Enter city name or ZIP code: ", (answer) => {
+  getWeather(answer.trim());
+});
